@@ -23,13 +23,13 @@
         <p
           v-for="i in currentItems"
           :key="i.id"
-          v-if="!i.isComplete"
+          v-if="!i.is_complete"
         >
           <my-item
             :summary="i.summary"
             :description="i.description"
             :id="i.id"
-            :isComplete="i.isComplete"
+            :is_complete="i.is_complete"
           >
           </my-item>
         </p>
@@ -39,13 +39,13 @@
         <p
           v-for="i in currentItems"
           :key="i.id"
-          v-if="i.isComplete"
+          v-if="i.is_complete"
         >
           <my-item
             :summary="i.summary"
             :description="i.description"
             :id="i.id"
-            :isComplete="i.isComplete"
+            :is_complete="i.is_complete"
           >
           </my-item>
         </p>
@@ -59,6 +59,7 @@
 import MyList from './components/MyList.vue';
 import MyItem from './components/MyItem.vue';
 import {eventBus} from './main';
+import {backendService} from './Actions';
 
 export default {
   data: function() {
@@ -69,6 +70,7 @@ export default {
       currentItems: null,
       showModal: false,
       showCompletedTab: false,
+      resource: this.$resource('', {}, backendService),
     }
   },
   components: {
@@ -76,33 +78,52 @@ export default {
     myItem: MyItem,
   },
   methods: {
+    loadAllContent() {
+      this.resource.getAllLists()
+        .then(response => {
+            return response.json();
+          })
+        .then(data => {
+          this.lists = data;
+          this.lists.forEach(function(element) {
+            element.selected = false;
+            element.items = [];
+            this.resource.getListItems({listId: element.id})
+              .then(response => {
+                return response.json();
+              })
+              .then(data => {
+                element.items = data;
+              })
+          }, this);
+        });
+    },
     createList(event) {
-      this.lastListId += 1;
-      var newList = {
-        id: this.lastListId,
-        name: event.target.value,
-        selected: false,
-        items: [],
-        lastItemId: 0,
-      };
-      this.lists.push(newList);
+      this.resource.createNewList({}, {name: event.target.value})
+        .then(response => {
+          return response.json();
+        })
+        .then(data => {
+          data.selected = false;
+          data.items = [];
+          this.lists.push(data);
+        })
       event.target.value = "";
     },
     createItem(event) {
-      var itemId = this.currentList.lastItemId += 1;
-      var newItem = {
-        id: itemId,
-        summary: event.target.value,
-        description: '',
-        isComplete: false,
-      };
-      this.currentItems.unshift(newItem);
+      this.resource.createListItem({listId: this.currentList.id}, {summary: event.target.value})
+        .then(response => {
+          return response.json();
+        })
+        .then(responseData => {
+          this.currentItems.unshift(responseData);
+        })
       event.target.value = "";
     },
     showCompleted() {
       var isCompletePresent = false;
       this.currentItems.forEach(function(element) {
-        if (element.isComplete) {
+        if (element.is_complete) {
           isCompletePresent = true;
         }
       }, this);
@@ -110,6 +131,7 @@ export default {
     },
   },
   created() {
+    this.loadAllContent();
     eventBus.$on('selectList', (listId) => {
       if (this.currentList) {
         this.currentList.selected = false;
@@ -124,49 +146,81 @@ export default {
       }, this);
     });
     eventBus.$on('deleteList', (listId) => {
-      if (this.currentList.id === listId) {
+      if (this.currentList && this.currentList.id === listId) {
         this.currentList.selected = false;
+        this.currentItems = [];
+        this.showCompleted();
       };
       this.lists.forEach(function(element){
         if (element.id === listId) {
-          this.lists.splice(this.lists.indexOf(element), 1 );
+          this.resource.deleteList({listId: listId})
+            .then(response => {
+              this.lists.splice(this.lists.indexOf(element), 1 );
+            })
         }
       }, this);
     });
     eventBus.$on('deleteItem', (itemId) => {
       this.currentItems.forEach(function(element) {
         if (element.id === itemId) {
-          this.currentItems.splice(this.currentItems.indexOf(element), 1);
-          this.showCompleted();
+          this.resource.deleteListItem({listId: this.currentList.id, itemId: itemId})
+            .then(response => {
+              this.currentItems.splice(this.currentItems.indexOf(element), 1);
+              this.showCompleted();
+            })
         }
       }, this);
     });
     eventBus.$on('completeItem', (itemId) => {
       this.currentItems.forEach(function(element) {
         if (element.id === itemId) {
-          element.isComplete = !element.isComplete;
-          this.showCompleted();
+          this.resource.updateListItem({listId: this.currentList.id, itemId: itemId}, {summary: element.summary, is_complete: !element.is_complete})
+            .then(response => {
+              return response.json();
+            })
+            .then(responseData => {
+              element.is_complete = !element.is_complete;
+              this.showCompleted();
+            })
         };
       }, this);
     });
     eventBus.$on('updateItemDescription', (data) => {
       this.currentItems.forEach(function(element) {
         if (element.id === data.id) {
-          element.description = data.description;
+          this.resource.updateListItem({listId: this.currentList.id, itemId: element.id}, {summary: element.summary, description: data.description})
+            .then(response => {
+              return response.json();
+            })
+            .then(responseData => {
+              element.description = data.description;
+            })
         }
       }, this);
     });
     eventBus.$on('updateItemSummary', (data) => {
       this.currentItems.forEach(function(element) {
         if (element.id === data.id) {
-          element.summary = data.summary;
+          this.resource.updateListItem({listId: this.currentList.id, itemId: element.id}, {summary: data.summary})
+            .then(response => {
+              return response.json();
+            })
+            .then(responseData => {
+              element.summary = data.summary;
+            })
         }
       }, this);
     });
     eventBus.$on('renameListName', (data) => {
       this.lists.forEach(function(element) {
         if (element.id === data.id) {
-          element.name = data.newName;
+          this.resource.updateList({listId: data.id}, {name: data.newName})
+            .then(response => {
+              return response.json();
+            })
+            .then(responseData => {
+              element.name = responseData.name;
+            })
         };
       }, this);
     });
@@ -175,7 +229,7 @@ export default {
 </script>
 
 <style>
-  h1 { color: brown; font-family: "Great Vibes", cursive; font-size: 80px; line-height: 60px; font-weight: normal; margin-bottom: 50px; margin-top: 15px; text-align: center; text-shadow: 0 1px 1px #fff; }
+  h1 { color: brown; font-family: "Great Vibes", cursive; font-size: 80px; line-height: 60px; font-weight: normal; margin-bottom: 50px; margin-top: 20px; text-align: center; text-shadow: 0 1px 1px #fff; }
 
   input[type=text] {
     width: 100%;

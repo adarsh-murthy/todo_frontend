@@ -1,6 +1,6 @@
 <template>
   <div id="item" class="container col-sm-12">
-    <input :id="id" type="checkbox" :checked="isComplete" @change="completeItem">
+    <input :id="id" type="checkbox" :checked="is_complete" @change="completeItem">
     <label :for="id">{{ itemSummary }}</label>
     <button aria-label="Close Account Info Modal Box" style="float: right; background: #EA5D5D" @click="deleteItem">&#x2717;</button>
 
@@ -18,7 +18,7 @@ export default {
   props: {
     summary: String,
     description: String,
-    isComplete: Boolean,
+    is_complete: Boolean,
     id: Number,
   },
   data() {
