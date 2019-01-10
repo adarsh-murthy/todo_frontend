@@ -4,27 +4,26 @@
     <input type="text" v-model="listName" @keyup.enter="updateListName" v-if="showRename">
     <button aria-label="Close Account Info Modal Box" style="float: right; background: #EA5D5D" @click="deleteList">&#x2717;</button>
     <button style="float: right;" @click="renameList">&#9998</button>
+    {{ _inactive }}
   </div>
 </template>
 
 <script>
-import { eventBus } from '../main';
+import { eventBus } from '../../main';
 export default {
-  props: {
-    id: Number,
-    name: String,
-    items: Array,
-    selected: Boolean,
-  },
+  props: ['id', 'name', 'items'],
   data() {
     return {
       showRename: false,
       listName: this.name,
+      selected: null,
     };
   },
   methods: {
     deleteList(event) {
-      eventBus.$emit('deleteList', this.id)
+      if (confirm('Are you sure you want to delete this list?')) {
+        eventBus.$emit('deleteList', this.id)
+      }
     },
     selectList(event) {
       eventBus.$emit('selectList', Number(event.target.id));
@@ -42,10 +41,14 @@ export default {
     },
   },
   created() {
-    eventBus.$on('updateListSelected', (x) => {
-      this.selected ? this.color = 'yellow' : 'white';
+    eventBus.$on('selectList', listId => {
+      if (this.id === listId) {
+        this.selected = true;
+      } else {
+        this.selected = false;
+      }
     })
-  }
+  },
 }
 </script>
 
