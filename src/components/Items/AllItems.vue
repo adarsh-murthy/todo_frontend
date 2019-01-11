@@ -32,6 +32,9 @@
         </my-item>
       </div>
     </div>
+    <div class="footer">
+      <button class="btn btn-light" @click="sortPriority">Sort</button>
+    </div>
   </div>
 </template>
 
@@ -43,12 +46,17 @@ export default {
   data() {
     return {
       hideCompleted: true,
+      shouldSort: false,
     }
   },
   components: {
     myItem: MyItem,
   },
   methods: {
+    sortPriority() {
+      console.log('sort')
+      this.currentItems.sort((a, b) => b.priority - a.priority );
+    },
     isCompletePresent() {
       var isComplete = false;
       this.currentItems.forEach(function(element) {
@@ -87,4 +95,10 @@ export default {
   #completed-items-tab button [name="info"] {
     background: lightgray;
   }
+  .footer {
+    position: fixed;
+    bottom: 0;
+    right: 35%;
+    height: 50px;
+}
 </style>
