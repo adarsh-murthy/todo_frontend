@@ -4,7 +4,7 @@
     <label :for="id">{{ itemSummary }}</label>
     <button aria-label="Close Account Info Modal Box" style="float: right; background: #EA5D5D" @click="deleteItem">&#x2717;</button>
 
-    <button name="info" class="collapsible" @click="showContent = !showContent" title="Click for more info">&#9432;</button>
+    <button name="info" class="collapsible" @click="showContent = !showContent" title="Click for more info" style="background: transparent">&#9432;</button>
     <span class="collapsible star" title="Priority" v-for="x in Number(itemPriority)+1">&#x2605;</span>
     <div class="collapsible-content" v-if="showContent">
       <input name="summary-input" type="text" v-model="itemSummary" @blur="updateItemSummary">
@@ -81,10 +81,11 @@ export default {
 
   #item {
     border: 1px solid #ccc;
-    box-shadow: 1px 1px 2px black;
+    box-shadow: 1px 1px 10px black;
     padding: 10px;
     margin: 5px auto;
     text-align: left;
+    background-color: whitesmoke;
   }
   .collapsible {
     cursor: pointer;

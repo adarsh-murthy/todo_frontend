@@ -1,5 +1,8 @@
 <template>
-  <div id="all-lists">
+  <div class="container-fluid">
+    <p>
+      <input type="text" placeholder="Enter new List" @keyup.enter="createList" :style="{width: '100%'}">
+    </p>
     <p v-for="l in lists" :key="l.id">
       <my-list
         :id="l.id"
@@ -7,9 +10,6 @@
         :items="l.items"
       >
       </my-list>
-    </p>
-    <p>
-      <input type="text" placeholder="Enter new List" @keyup.enter="createList" :style="{width: '100%'}">
     </p>
   </div>
 </template>

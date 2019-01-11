@@ -1,5 +1,5 @@
 <template>
-  <div id="items">
+  <div id="items" class="row container">
     <p>
       <input type="text" placeholder="Enter new todo" @keyup.enter="createItem" :style="{width: '100%'}">
     </p>
@@ -74,6 +74,9 @@ export default {
 </script>
 
 <style scoped>
+#items {
+  width: 100%;
+}
   #todo-items {
     width: 100%;
   }

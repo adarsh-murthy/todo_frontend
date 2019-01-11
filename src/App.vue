@@ -1,10 +1,9 @@
 <template>
-  <div class="container">
-    <h1 align="center">Do It Today!</h1>
-    <div id="all-lists" class="container col-xs-6 col-sm-3">
+  <div id="parent-app" class="row">
+    <div id="all-lists" class="col-md-3">
       <all-lists :lists="lists"></all-lists>
     </div>
-    <div class="container col-xs-6 col-sm-9" v-if="currentList">
+    <div id="all-current-items" class="col-md-9">
       <all-items :currentItems="currentItems"></all-items>
     </div>
   </div>
@@ -21,7 +20,7 @@ export default {
     return {
       lists: [],
       currentList: null,
-      currentItems: null,
+      currentItems: [],
       resource: this.$resource('', {}, backendService),
     }
   },
@@ -182,6 +181,22 @@ export default {
 </script>
 
 <style>
+#parent-app {
+  height: 100vh;
+}
+#all-current-items {
+  height: 100vh;
+  background-image: url('./assets/cover.jpg');
+}
+#all-lists {
+  background-color: whitesmoke;
+  height: 100vh;
+  border: 1px solid #ccc;
+  box-shadow: 1px 1px 2px black;
+  position: sticky!important;
+  position: -webkit-sticky;
+  top: 0px;
+}
   h1 { color: brown; font-family: "Great Vibes", cursive; font-size: 80px; line-height: 60px; font-weight: normal; margin-bottom: 50px; margin-top: 20px; text-align: center; text-shadow: 0 1px 1px #fff; }
 
   input[type=text] {
